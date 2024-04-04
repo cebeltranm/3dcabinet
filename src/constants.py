@@ -9,5 +9,5 @@ DISPLAY_ROTATION = 90
 SENSOR1_CS = board.D5
 SENSOR2_CS = board.D16
 
-TOUCH_CS = board.CE1
+TOUCH_CS = digitalio.DigitalInOut(board.CE1)
 TOUCH_EVENT = board.D26

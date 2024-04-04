@@ -10,9 +10,11 @@ class TouchListener(object):
     touch_y_min = 160
     touch_y_max = 1905
     last_state = True
+    last_point_x = None
+    last_point_y = None
 
-    def __init__(self, event_callback):
-        self.touch = Touch(board.SPI(), cs=TOUCH_CS,
+    def __init__(self, spi, event_callback):
+        self.touch = Touch(spi, cs=TOUCH_CS,
                 x_min=self.touch_x_min, x_max=self.touch_x_max,
                 y_min=self.touch_y_min, y_max=self.touch_y_max)
         self.event_callback = event_callback
@@ -26,7 +28,15 @@ class TouchListener(object):
             self.last_state = current_state
             if current_state == False:
                 self.start_time = time.time()
-                self.event_callback('touch_down', 0)
+                xy = self.touch.raw_touch()
+                if xy == None:
+                    self.last_state = True
+                    print ('touch none')
+                else:
+                    self.last_point_x, self.last_point_y  = self.touch.normalize(*xy)
+                    self.event_callback('touch_down', 0, self.last_point_x, self.last_point_y)
             else:
                 end_time = time.time()
-                self.event_callback('touch_up', (end_time - self.start_time))
+                self.event_callback('touch_up', (end_time - self.start_time), self.last_point_x, self.last_point_y)
+        
+        return self.last_state == False

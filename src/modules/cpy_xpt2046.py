@@ -7,6 +7,7 @@ remove interrupt and re-config pin for CircuitPython
 """
 from time import sleep
 import digitalio
+from adafruit_bus_device import spi_device
 
 class Touch(object):
     """Serial interface for XPT2046 Touch Screen Controller."""
@@ -42,13 +43,10 @@ class Touch(object):
             y_min (int): Minimum Y coordinate
             y_max (int): Maximum Y coordinate
         """
-        self.spi = spi
-        self.cs = cs
-        #self.cs.init(self.cs.OUT, value=1)
-        self.cs_io = digitalio.DigitalInOut(cs)
-        self.cs_io.direction = digitalio.Direction.OUTPUT
-        self.cs_io.value=1
-        
+        # self.spi = spi
+        self.spi_device = spi_device.SPIDevice(
+            spi, cs
+        )        
         self.rx_buf = bytearray(3)  # Receive buffer
         self.tx_buf = bytearray(3)  # Transmit buffer
         self.width = width
@@ -62,17 +60,6 @@ class Touch(object):
         self.x_add = x_min * -self.x_multiplier
         self.y_multiplier = height / (y_max - y_min)
         self.y_add = y_min * -self.y_multiplier
-
-        """ ignore int_pin
-        if int_pin is not None:
-            self.int_pin = int_pin
-            self.int_pin.init(int_pin.IN)
-            
-            self.int_handler = int_handler
-            self.int_locked = False
-            int_pin.irq(trigger=int_pin.IRQ_FALLING | int_pin.IRQ_RISING,
-                        handler=self.int_press)
-        """
         
     def get_touch(self):
         """Take multiple samples to get accurate touch reading."""
@@ -102,22 +89,6 @@ class Touch(object):
             sleep(.05)
             timeout -= .05
         return None
-
-    """
-    def int_press(self, pin):
-        
-        if not pin.value() and not self.int_locked:
-            self.int_locked = True  # Lock Interrupt
-            buff = self.raw_touch()
-
-            if buff is not None:
-                x, y = self.normalize(*buff)
-                self.int_handler(x, y)
-            sleep(.1)  # Debounce falling edge
-        elif pin.value() and self.int_locked:
-            sleep(.1)  # Debounce rising edge
-            self.int_locked = False  # Unlock interrupt
-    """
     
     def normalize(self, x, y):
         """Normalize mean X,Y values to match LCD screen."""
@@ -150,13 +121,16 @@ class Touch(object):
         self.tx_buf[0] = command
         
         #self.cs(0)
-        self.cs_io.value=0
+        # self.cs_io.value=0
         
-        self.spi.try_lock()
-        self.spi.write_readinto(self.tx_buf, self.rx_buf)
-        self.spi.unlock()
+        # self.spi.try_lock()
+        # self.spi.write(self.tx_buf)
+        # self.spi.readinto(self.rx_buf)
+        with self.spi_device as spi:
+            spi.write_readinto(self.tx_buf, self.rx_buf)
+        # self.spi.unlock()
         
         #self.cs(1)
-        self.cs_io.value=1
+        # self.cs_io.value=1
 
         return (self.rx_buf[1] << 4) | (self.rx_buf[2] >> 4)

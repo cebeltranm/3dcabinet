@@ -1,22 +1,24 @@
+import time
+import threading
 import adafruit_dht
 import board
 from constants import *
 import adafruit_rgb_display.ili9341 as ili9341
-import time
 from modules.screen import Screen
 from modules.number_section import NumberSection
 from modules.light_section import LightSection
 from modules.touch_listener import TouchListener
 
 spi = board.SPI()
+def touch_event(event, duration, x = None, y = None):
+    print(event, duration, x, y)
+
+touchListener = TouchListener(spi, touch_event)
+
 disp = ili9341.ILI9341(spi, rotation=DISPLAY_ROTATION, cs=DISPLAY_CS_PIN, dc=DISPLAY_DC_PIN, rst=DISPLAY_RESET_PIN)
 loadingScreen = Screen('resources/loading.png')
 loadingScreen.render(disp)
 
-def touch_event(event, duration):
-    print(event, duration)
-
-touchListener = TouchListener(touch_event)
 
 sensor1 = adafruit_dht.DHT22(SENSOR1_CS)
 sensor2 = adafruit_dht.DHT22(SENSOR2_CS)
@@ -40,7 +42,26 @@ mainScreen = Screen('resources/main.jpg', [
     LightSection()
 ])
 
-while True:
-    touchListener.check_touch()
-    mainScreen.render(disp)
-    time.sleep(0.2)
+def touch():
+    while True:
+        touchListener.check_touch()
+        time.sleep(0.1)
+
+def render():
+    while True:
+        mainScreen.render(disp)
+        time.sleep(0.2)
+
+thread_touch = threading.Thread(target=touch)
+thread_render = threading.Thread(target=render)
+
+thread_touch.start()
+thread_render.start()
+
+thread_touch.join()
+thread_render.join()
+
+
+# while True:
+#     mainScreen.render(disp)
+#     time.sleep(0.2)
