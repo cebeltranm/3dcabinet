@@ -11,3 +11,6 @@ SENSOR2_CS = board.D16
 
 TOUCH_CS = digitalio.DigitalInOut(board.CE1)
 TOUCH_EVENT = board.D26
+
+LEDS1_PIN = board.D18
+LEDS1_SIZE = 20

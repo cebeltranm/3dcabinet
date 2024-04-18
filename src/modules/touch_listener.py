@@ -21,6 +21,9 @@ class TouchListener(object):
         self.pin = digitalio.DigitalInOut(TOUCH_EVENT)
         self.pin.direction = digitalio.Direction.INPUT
         self.pin.pull = digitalio.Pull.DOWN
+    
+    def transform_points(self, x, y):
+        return x, 320 -y
 
     def check_touch(self):
         current_state = self.pin.value
@@ -33,7 +36,7 @@ class TouchListener(object):
                     self.last_state = True
                     print ('touch none')
                 else:
-                    self.last_point_x, self.last_point_y  = self.touch.normalize(*xy)
+                    self.last_point_x, self.last_point_y  = self.transform_points(*self.touch.normalize(*xy))
                     self.event_callback('touch_down', 0, self.last_point_x, self.last_point_y)
             else:
                 end_time = time.time()

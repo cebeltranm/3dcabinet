@@ -1,3 +1,4 @@
+import keyboard
 import time
 import threading
 import adafruit_dht
@@ -8,10 +9,39 @@ from modules.screen import Screen
 from modules.number_section import NumberSection
 from modules.light_section import LightSection
 from modules.touch_listener import TouchListener
+from modules.color_picker_section import ColorPickerSection
+from modules.button_section import ButtonSection
+
+selected_screen = None
+selected_light = None
+procesing = True
+screens = {}
 
 spi = board.SPI()
 def touch_event(event, duration, x = None, y = None):
-    print(event, duration, x, y)
+    global selected_screen
+    if selected_screen != None:
+        selected_screen.touch_event(event, duration, x, y)
+
+def select_color(color):
+    global selected_light
+    if selected_light != None:
+        selected_light.set_color(color)
+
+def close_screen():
+    global selected_screen
+    global screens
+    selected_screen = screens['main']
+    selected_screen.clear_state()
+
+def select_color_screen(light):
+    global selected_light
+    global selected_screen
+    global screens
+
+    selected_light = light
+    selected_screen = screens['color']
+    selected_screen.clear_state()
 
 touchListener = TouchListener(spi, touch_event)
 
@@ -24,44 +54,71 @@ sensor1 = adafruit_dht.DHT22(SENSOR1_CS)
 sensor2 = adafruit_dht.DHT22(SENSOR2_CS)
 
 def get_sensor_value(sensor, value):
-    def get_value():
-        try:
-            if value == 'temperature':
-                return sensor.temperature
-            elif value == 'humidity':
-                return sensor.humidity
-        except RuntimeError as error:
-            print(error.args[0])
-    return get_value
+    try:
+        if value == 'temperature':
+            return sensor.temperature
+        elif value == 'humidity':
+            return sensor.humidity
+    except RuntimeError as error:
+        print(error.args[0])
 
-mainScreen = Screen('resources/main.jpg', [
-    NumberSection(get_sensor_value(sensor1, 'temperature'), 25, 210, 80, 50, 40),
-    NumberSection(get_sensor_value(sensor1, 'humidity'), 85, 210, 80, 50, 40),
-    NumberSection(get_sensor_value(sensor2, 'temperature'), 25, 95, 80, 50, 40),
-    NumberSection(get_sensor_value(sensor2, 'humidity'), 85, 95, 80, 50, 40),
-    LightSection()
+# main screeen
+temp1 = NumberSection( 25, 210, 80, 50, 40)
+hum1 = NumberSection( 85, 210, 80, 50, 40)
+temp2 = NumberSection( 25, 95, 80, 50, 40)
+hum2 = NumberSection( 85, 95, 80, 50, 40)
+light1 = LightSection(160, 230, select_color_screen)
+
+screens['main'] = Screen('resources/main.jpg', None, [
+    temp1,
+    hum1,
+    temp2,
+    hum2,
+    light1
 ])
 
+selected_screen = screens['main']
+selected_light = light1
+
+# Color screen
+colorSection1 = ColorPickerSection( select_color, 0,0 )
+closeButton = ButtonSection( 'resources/close.jpg', 1, 280, close_screen )
+
+screens['color'] = Screen(None, (10, 10, 60), [
+    colorSection1,
+    closeButton
+])
+
+
+def sensors():
+    global procesing
+    while procesing:
+        temp1.value = get_sensor_value(sensor1, 'temperature')
+        temp2.value = get_sensor_value(sensor2, 'temperature')
+        hum1.value = get_sensor_value(sensor1, 'humidity')
+        hum2.value = get_sensor_value(sensor2, 'humidity')
+        time.sleep(0.2)
+
 def touch():
-    while True:
+    global procesing
+    while procesing:
         touchListener.check_touch()
         time.sleep(0.1)
 
 def render():
-    while True:
-        mainScreen.render(disp)
-        time.sleep(0.2)
+    global selected_screen
+    global procesing
+    while procesing:
+        selected_screen.render(disp)
+        time.sleep(0.05)
 
 thread_touch = threading.Thread(target=touch)
 thread_render = threading.Thread(target=render)
+thread_sensors = threading.Thread(target=sensors)
 
 thread_touch.start()
 thread_render.start()
+thread_sensors.start()
 
-thread_touch.join()
-thread_render.join()
-
-
-# while True:
-#     mainScreen.render(disp)
-#     time.sleep(0.2)
+keyboard.wait('enter') 
+procesing = False
