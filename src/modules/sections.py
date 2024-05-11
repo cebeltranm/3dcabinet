@@ -2,6 +2,7 @@ import math
 from modules.render import RenderedComponent, TouchEvent
 from PIL import Image, ImageDraw, ImageFont
 from modules.bus_events import BusEvents
+from modules.store import Store
 
 class Section (RenderedComponent, TouchEvent):
     def __init__(self, x, y , w, h):
@@ -76,21 +77,28 @@ class LevelSection(Section):
 class LightSection(LevelSection):
     light_images = None
     pixels = None
-
-    def __init__(self, x, y, pixels):
+    
+    def __init__(self, x, y, pixels, id):
         if LightSection.light_images == None:
             LightSection.light_images = [Image.open(f"resources/light{i}.jpg") for i in range(1, 6)]
         super().__init__( x, y, LightSection.light_images)
-        self.level = 0
+
         self.pixels = pixels
-        self.pixels.fill((0, 255, 0))
+        self._id = id
+        store = Store()
+        self.level = store.get_value(f"${id}_level") if store.get_value(f"${id}_level") else 0
+        self.pixels.fill(store.get_value(f"${id}_color") if store.get_value(f"${id}_color") else (0,0,250))
 
     def set_color(self, color):
         self.pixels.fill(color)
+        store = Store()
+        store.set_value(f"${self._id}_color", color)
 
     def on_level_changed(self, level):
         if self.pixels:
             self.pixels.brightness = 0 if level <=1 else (level - 1) / (len(LightSection.light_images) - 1)
+        store = Store()
+        store.set_value(f"${self._id}_level", level)
     
     def on_selected(self):
         bus_events = BusEvents()
@@ -104,13 +112,15 @@ class FanSection(LevelSection):
         if FanSection.fan_images == None:
             FanSection.fan_images = [Image.open(f"resources/light{i}.jpg") for i in range(1, 6)]
         super().__init__( x, y, FanSection.fan_images)
-        self.level = 0
         self.pwm_sensor = pwm_sensor
-        self.pwm_sensor.set_speed(100)
+        store = Store()
+        self.level = store.get_value("pwm_level") if store.get_value("pwm_level") else 0
 
     def on_level_changed(self, level):
         if self.pwm_sensor:
             self.pwm_sensor.set_speed( 100 - (0 if level <=1 else 100 * (level - 1) / (len(FanSection.fan_images) - 1)))
+        store = Store()
+        store.set_value("pwm_level", level)
     
 class ColorPickerSection(Section):
     #radians value of a specific degree

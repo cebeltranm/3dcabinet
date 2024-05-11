@@ -67,7 +67,7 @@ class MainScreen(Screen):
         self.section1 = {
             'temperature': NumberSection( 25, 225, 80, 50, 40),
             'humidity': NumberSection( 95, 225, 80, 50, 40),
-            'light': LightSection(180, 240, pixels1),
+            'light': LightSection(180, 240, pixels1, 'sec1'),
         }
         self.section2 = {
             'temperature': NumberSection( 25, 120, 80, 50, 40),
