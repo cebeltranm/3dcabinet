@@ -1,5 +1,8 @@
+import os
 import board
 import digitalio
+
+os.chdir('/home/carlos/projects/3dcabinet/')
 
 DISPLAY_CS_PIN = digitalio.DigitalInOut(board.CE0)
 DISPLAY_DC_PIN = digitalio.DigitalInOut(board.D6)
