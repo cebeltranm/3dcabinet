@@ -20,7 +20,7 @@ class RenderedComponent:
             if self.backgroundColor != None:
                 disp.fill_rectangle(0,0,240,320, rgb.color565(self.backgroundColor))
             if self.backgroundImg != None:
-                disp.image(self.backgroundImg)
+                disp.image(self.backgroundImg, None, self.x, self.y)
             self.rendered = True
             return True
 
@@ -29,4 +29,4 @@ class RenderedComponent:
 
 class TouchEvent:
     def touch_event(self, event, time, x, y):
-        pass
+        return False
