@@ -3,6 +3,7 @@ from modules.render import RenderedComponent, TouchEvent
 from modules.sections import NumberSection, LightSection, ColorPickerSection, ButtonSection, FanSection
 from PIL import Image, ImageDraw, ImageFont
 from modules.bus_events import BusEvents
+from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT
 
 class Screen(RenderedComponent, TouchEvent):
     def __init__(self, background = None, backgroundColor = None, sections = []):
@@ -31,7 +32,7 @@ class LoadingScreen(Screen):
 
     def __init__(self):
         super().__init__(None, (0,0,0))
-        self.steps_image = Image.new('RGB', (320, 40))
+        self.steps_image = Image.new('RGB', (DISPLAY_WIDTH, 80))
 
     @property
     def step(self):
@@ -41,23 +42,24 @@ class LoadingScreen(Screen):
     def step(self, step):
         self._step = step
         draw = ImageDraw.Draw(self.steps_image)
-        draw.rectangle([(0, 0), (320, 40)], fill="black")
+        draw.rectangle([(0, 0), (DISPLAY_WIDTH, 80)], fill="black")
         for i in range(0, step):
-            draw.rectangle( [(10 + i*30, 0), (30 + i*30, 40)], fill=(100, 100, 200))
+            draw.rectangle( [(10 + i*23, 0), (23 + i*23, 80)], fill=(100, 100, 200))
         self.rendered_steps = False
 
     def render(self, disp):
         if super().render(disp):
             w = 80
-            h = 20
+            h = 30
             image = Image.new('RGB', (w, h))
             font = ImageFont.load_default(16)
             draw = ImageDraw.Draw(image)
             draw.rectangle([(0, 0), (w, h)], fill="black")
             draw.text((0, 0),"Loading...", font=font, fill=(100, 100, 100))
-            disp.image(image, None, 220 - h, 10)
+            disp.image(image, None, DISPLAY_WIDTH - w, DISPLAY_HEIGHT - h)
+            # disp.image(image, None, 20 - h, 10)
         if self.rendered_steps == False:
-            disp.image(self.steps_image, None, 100, 0)
+            disp.image(self.steps_image, None, 0, 100)
             self.rendered_steps = True
             
 
@@ -65,40 +67,60 @@ class LoadingScreen(Screen):
 class MainScreen(Screen):
     def __init__(self, pixels1, pwm_sensor):
         self.section1 = {
-            'temperature': NumberSection( 25, 225, 80, 50, 40),
-            'humidity': NumberSection( 95, 225, 80, 50, 40),
-            'light': LightSection(180, 240, pixels1, 'sec1'),
+            'temperature': NumberSection( 20, 5, 80, 70, 70),
+            'humidity': NumberSection( 10, 85, 80, 70, 70),
+            'light': LightSection(30, 170, pixels1, 'sec1'),
         }
         self.section2 = {
-            'temperature': NumberSection( 25, 120, 80, 50, 40),
-            'humidity': NumberSection( 95, 120, 80, 50, 40)
+            'temperature': NumberSection( 130, 5, 80, 70, 70),
+            'humidity': NumberSection( 130, 85, 80, 70, 70),
+            'light': LightSection(130, 170, pixels1, 'sec1'),
         }
-        self.pwm = NumberSection(55, 10, 80, 20, 20)
-        self.pwm_section = FanSection(10, 30, pwm_sensor)
+        self.pwm = NumberSection(20, 290, 80, 20, 20)
+        self.pwm_section = FanSection(20, 240, pwm_sensor)
 
         super().__init__(None, (0, 0, 0), [
             self.section1["temperature"],
             self.section1["humidity"],
+            self.section1["light"],
             self.section2["temperature"],
             self.section2["humidity"],
+            self.section2["light"],
             self.pwm,
-            self.section1["light"],
             self.pwm_section,
         ])
 
     def setSensorValues(self, values):
-        self.section1["temperature"].value = values[0]["temperature"]
-        self.section1["humidity"].value = values[0]["humidity"]
-        self.section2["temperature"].value = values[1]["temperature"]
-        self.section2["humidity"].value = values[1]["humidity"]
-        self.pwm.value = values[2]["rpm"]
+        try:
+            self.section1["temperature"].value = int(values[0]["temperature"])
+        except Exception as e:
+            print(f"An error occurred seting the temperature of sensor1: {e}")
+        try:
+            self.section1["humidity"].value = int(values[0]["humidity"])
+        except Exception as e:
+            print(f"An error occurred seting the humidity of sensor1: {e}")
+
+        try:
+            self.section2["temperature"].value = int(values[1]["temperature"])
+        except Exception as e:
+            print(f"An error occurred seting the temperature of sensor2: {e}")
+
+        try:
+            self.section2["humidity"].value = int(values[1]["humidity"])
+        except Exception as e:
+            print(f"An error occurred seting the humidity of sensor2: {e}")
+
+        try:
+            self.pwm.value = values[2]["rpm"]
+        except Exception as e:
+            print(f"An error occurred seting the rpm of the fan: {e}")
 
     def render(self, disp):
         if super().render(disp):
-            disp.hline(0, 106, 240, rgb.color565(40, 40, 40))
-            disp.hline(0, 212, 240, rgb.color565(40, 40, 40))
-            disp.vline(80, 0, 320, rgb.color565(40, 40, 40))
-            disp.vline(160, 0, 320, rgb.color565(40, 40, 40))
+            for i in range(1, 5):
+                disp.hline(0, i * 64, DISPLAY_WIDTH, rgb.color565(40, 40, 40))
+            for i in range(1, 2):
+                disp.vline(i * 120, 0, DISPLAY_HEIGHT, rgb.color565(40, 40, 40))
 
 class ColorPickerScreen(Screen):
     def __init__(self):

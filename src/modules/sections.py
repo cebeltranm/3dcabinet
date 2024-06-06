@@ -30,7 +30,7 @@ class NumberSection(Section):
             self._value = value
             draw = ImageDraw.Draw(self.backgroundImg)
             draw.rectangle([(0, 0), (self.w, self.h)], fill="black")
-            draw.text((0, 0),f"{self.value:.1f}", font=self.font, fill=(0, 255, 255))
+            draw.text((0, 0),str(self.value), font=self.font, fill=(0, 255, 255))
             self.rendered = False
 
 class LevelSection(Section):

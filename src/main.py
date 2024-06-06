@@ -76,7 +76,8 @@ class Main(BusEventLlistener):
                         self.sensor2.load_value(),
                         self.pwmsensor.load_value(),
                     ])
-                except:
+                except Exception as e:
+                    print(f"An error occurred: {e}")
                     pass
             time.sleep(1)
 
