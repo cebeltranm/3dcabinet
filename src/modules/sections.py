@@ -3,6 +3,7 @@ from modules.render import RenderedComponent, TouchEvent
 from PIL import Image, ImageDraw, ImageFont
 from modules.bus_events import BusEvents
 from modules.store import Store
+from constants import COLOR_BACKGROUND, COLOR_TEXT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER
 
 class Section (RenderedComponent, TouchEvent):
     def __init__(self, x, y , w, h):
@@ -14,11 +15,14 @@ class Section (RenderedComponent, TouchEvent):
 class NumberSection(Section):
     _value = None
 
-    def __init__(self, x, y, w, h, font_size = 20):
+    def __init__(self, x, y, w, h, font_size = 20, font_color = COLOR_TEXT, background = COLOR_BACKGROUND, align = ALIGN_LEFT):
         super().__init__(x, y, w, h)
         self.font_size = font_size
         self.backgroundImg = Image.new('RGB', (w, h))
         self.font = ImageFont.load_default(self.font_size)
+        self.font_color = font_color
+        self.background = background
+        self.align = align
 
     @property
     def value(self):
@@ -29,8 +33,13 @@ class NumberSection(Section):
         if value != None and value != self._value:
             self._value = value
             draw = ImageDraw.Draw(self.backgroundImg)
-            draw.rectangle([(0, 0), (self.w, self.h)], fill="black")
-            draw.text((0, 0),str(self.value), font=self.font, fill=(0, 255, 255))
+            draw.rectangle([(0, 0), (self.w, self.h)], fill=self.background)
+            x = 0
+            if self.align ==ALIGN_RIGHT:
+                x = self.w - draw.textlength(str(self.value), font=self.font)
+            if self.align == ALIGN_CENTER:
+                x = int( (self.w - draw.textlength(str(self.value), font=self.font)) / 2)
+            draw.text(( x, 0),str(self.value), font=self.font, fill=self.font_color, align=ALIGN_LEFT)
             self.rendered = False
 
 class LevelSection(Section):
@@ -110,7 +119,7 @@ class FanSection(LevelSection):
 
     def __init__(self, x, y, pwm_sensor):
         if FanSection.fan_images == None:
-            FanSection.fan_images = [Image.open(f"resources/light{i}.jpg") for i in range(1, 6)]
+            FanSection.fan_images = [Image.open(f"resources/fan{i}.jpg") for i in range(1, 5)]
         super().__init__( x, y, FanSection.fan_images)
         self.pwm_sensor = pwm_sensor
         store = Store()

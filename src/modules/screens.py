@@ -3,7 +3,7 @@ from modules.render import RenderedComponent, TouchEvent
 from modules.sections import NumberSection, LightSection, ColorPickerSection, ButtonSection, FanSection
 from PIL import Image, ImageDraw, ImageFont
 from modules.bus_events import BusEvents
-from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT
+from constants import *
 
 class Screen(RenderedComponent, TouchEvent):
     def __init__(self, background = None, backgroundColor = None, sections = []):
@@ -67,27 +67,27 @@ class LoadingScreen(Screen):
 class MainScreen(Screen):
     def __init__(self, pixels1, pwm_sensor):
         self.section1 = {
-            'temperature': NumberSection( 20, 5, 80, 70, 70),
-            'humidity': NumberSection( 10, 85, 80, 70, 70),
-            'light': LightSection(30, 170, pixels1, 'sec1'),
+            'temperature': NumberSection( 161, 79, 53, 44, FONT_SIZE_MEDIUM, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
+            'humidity': NumberSection( 14, 47, 95, 74, FONT_SIZE_BIG, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
+            'light': LightSection(181, 4, pixels1, 'sec1'),
         }
         self.section2 = {
-            'temperature': NumberSection( 130, 5, 80, 70, 70),
-            'humidity': NumberSection( 130, 85, 80, 70, 70),
-            'light': LightSection(130, 170, pixels1, 'sec1'),
+            'temperature': NumberSection( 161, 214, 53, 44, FONT_SIZE_MEDIUM, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
+            'humidity': NumberSection( 14, 178, 95, 74, FONT_SIZE_BIG, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
+            'light': LightSection(181, 136, pixels1, 'sec1'),
         }
-        self.pwm = NumberSection(20, 290, 80, 20, 20)
-        self.pwm_section = FanSection(20, 240, pwm_sensor)
+        self.pwm = NumberSection(128, 55, 48, 12, FONT_SIZE_SMALL, COLOR_ACCENT, COLOR_BACKGROUND, ALIGN_CENTER)
+        self.pwm_section = FanSection(127, 4, pwm_sensor)
 
-        super().__init__(None, (0, 0, 0), [
+        super().__init__('resources/main.jpg', None, [
             self.section1["temperature"],
             self.section1["humidity"],
             self.section1["light"],
+            self.pwm,
+            self.pwm_section,
             self.section2["temperature"],
             self.section2["humidity"],
             self.section2["light"],
-            self.pwm,
-            self.pwm_section,
         ])
 
     def setSensorValues(self, values):
@@ -115,12 +115,12 @@ class MainScreen(Screen):
         except Exception as e:
             print(f"An error occurred seting the rpm of the fan: {e}")
 
-    def render(self, disp):
-        if super().render(disp):
-            for i in range(1, 5):
-                disp.hline(0, i * 64, DISPLAY_WIDTH, rgb.color565(40, 40, 40))
-            for i in range(1, 2):
-                disp.vline(i * 120, 0, DISPLAY_HEIGHT, rgb.color565(40, 40, 40))
+#    def render(self, disp):
+#        if super().render(disp):
+#            for i in range(1, 5):
+#                disp.hline(0, i * 64, DISPLAY_WIDTH, rgb.color565(40, 40, 40))
+#            for i in range(1, 2):
+#                disp.vline(i * 120, 0, DISPLAY_HEIGHT, rgb.color565(40, 40, 40))
 
 class ColorPickerScreen(Screen):
     def __init__(self):
