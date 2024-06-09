@@ -124,10 +124,10 @@ class MainScreen(Screen):
 
 class ColorPickerScreen(Screen):
     def __init__(self):
-        self.color_picker = ColorPickerSection(0, 0)
-        closeButton = ButtonSection( 'resources/close.jpg', 1, 280, self.close_screen )
+        self.color_picker = ColorPickerSection(0, 0, 240, 280)
+        closeButton = ButtonSection( None, 79, 280, 68, 40, self.close_screen )
 
-        super().__init__(None, (0, 0, 0), [
+        super().__init__("resources/color_picker.jpg", COLOR_BACKGROUND, [
             self.color_picker,
             closeButton
         ])

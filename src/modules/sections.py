@@ -3,7 +3,7 @@ from modules.render import RenderedComponent, TouchEvent
 from PIL import Image, ImageDraw, ImageFont
 from modules.bus_events import BusEvents
 from modules.store import Store
-from constants import COLOR_BACKGROUND, COLOR_TEXT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER
+from constants import COLOR_BACKGROUND, COLOR_TEXT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER, DISPLAY_HEIGHT, DISPLAY_WIDTH
 
 class Section (RenderedComponent, TouchEvent):
     def __init__(self, x, y , w, h):
@@ -137,11 +137,11 @@ class ColorPickerSection(Section):
     A_60 = 1.047172
     A_55 = 0.9599
 
-    def __init__(self, x = 0, y = 0, w = 280, h = 240):
+    def __init__(self, x = 0, y = 0, w = DISPLAY_WIDTH, h = DISPLAY_HEIGHT):
         super().__init__(x, y, w, h )
         self.mx = w / 2
         self.my = h / 2
-        self.backgroundImg = Image.open("resources/pick_color.png")
+        # self.backgroundImg = Image.open("resources/pick_color.png")
 
     def getColor(self, a1, a2, angle, distance):
         if a1 <= angle and angle <= a2:
@@ -186,11 +186,12 @@ class ColorPickerSection(Section):
 
 
 class ButtonSection(Section):
-    def __init__(self, image, x, y, action):
-        backgroundImg = Image.open(image)
-        super().__init__(x, y, backgroundImg.width, backgroundImg.height)
-        self.backgroundImg = backgroundImg
+    def __init__(self, image, x, y, w, h, action):
+        super().__init__(x, y, w, h)
         self.action = action    
+        if image:
+            backgroundImg = Image.open(image)
+            self.backgroundImg = backgroundImg
 
     def touch_event(self, event, time, x, y):
         if event == 'touch_down' and self.is_point_into(x,y):
