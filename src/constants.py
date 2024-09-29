@@ -12,7 +12,7 @@ DISPLAY_ROTATION = 0
 DISPLAY_WIDTH = 240
 DISPLAY_HEIGHT = 320
 
-SENSOR1_CS = board.D22
+SENSOR1_CS = board.D27
 SENSOR2_CS = board.D16
 
 TOUCH_CS = digitalio.DigitalInOut(board.CE1)
