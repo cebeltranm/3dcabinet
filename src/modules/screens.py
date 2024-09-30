@@ -1,6 +1,6 @@
 import adafruit_rgb_display.rgb as rgb
 from modules.render import RenderedComponent, TouchEvent
-from modules.sections import NumberSection, LightSection, ColorPickerSection, ButtonSection, FanSection
+from modules.sections import NumberSection, LightSection, ColorPickerSection, ButtonSection, FanSection, WifiSection
 from PIL import Image, ImageDraw, ImageFont
 from modules.bus_events import BusEvents
 from constants import *
@@ -65,7 +65,7 @@ class LoadingScreen(Screen):
 
 
 class MainScreen(Screen):
-    def __init__(self, pixels1, pwm_sensor):
+    def __init__(self, pixels1, pixels2, pwm_sensor):
         self.section1 = {
             'temperature': NumberSection( 161, 79, 53, 44, FONT_SIZE_MEDIUM, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
             'humidity': NumberSection( 14, 47, 95, 74, FONT_SIZE_BIG, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
@@ -74,10 +74,11 @@ class MainScreen(Screen):
         self.section2 = {
             'temperature': NumberSection( 161, 214, 53, 44, FONT_SIZE_MEDIUM, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
             'humidity': NumberSection( 14, 178, 95, 74, FONT_SIZE_BIG, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
-            'light': LightSection(181, 136, pixels1, 'sec1'),
+            'light': LightSection(181, 136, pixels2, 'sec2'),
         }
         self.pwm = NumberSection(128, 55, 48, 12, FONT_SIZE_SMALL, COLOR_ACCENT, COLOR_BACKGROUND, ALIGN_CENTER)
         self.pwm_section = FanSection(127, 4, pwm_sensor)
+        self.wifi = WifiSection(190, 270);
 
         super().__init__('resources/main.jpg', None, [
             self.section1["temperature"],
@@ -88,6 +89,7 @@ class MainScreen(Screen):
             self.section2["temperature"],
             self.section2["humidity"],
             self.section2["light"],
+            self.wifi,
         ])
 
     def setSensorValues(self, values):

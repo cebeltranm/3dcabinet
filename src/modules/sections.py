@@ -3,6 +3,7 @@ from modules.render import RenderedComponent, TouchEvent
 from PIL import Image, ImageDraw, ImageFont
 from modules.bus_events import BusEvents
 from modules.store import Store
+from modules.network import NetworkInfo
 from constants import COLOR_BACKGROUND, COLOR_TEXT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER, DISPLAY_HEIGHT, DISPLAY_WIDTH
 
 class Section (RenderedComponent, TouchEvent):
@@ -196,3 +197,24 @@ class ButtonSection(Section):
     def touch_event(self, event, time, x, y):
         if event == 'touch_down' and self.is_point_into(x,y):
             self.action()
+
+class WifiSection(Section):
+    images = None
+    IP = None
+    
+    def __init__(self, x, y):
+        if self.images == None:
+            self.images = [Image.open(f"resources/wifi{i}.jpg") for i in range(1, 3)]
+        super().__init__(x, y, self.images[0].width, self.images[0].height)
+        self.backgroundImg = self.images[0]
+        self.network_info = NetworkInfo()
+
+    def render(self, disp):
+        if self.IP == None and self.network_info.private_ip != None:
+            self.backgroundImg = self.images[1]
+            self.rendered = False
+        if self.IP != None and self.network_info.private_ip == None:
+            self.backgroundImg = self.images[0]
+            self.rendered = False
+        self.IP = self.network_info.private_ip
+        super().render(disp)
