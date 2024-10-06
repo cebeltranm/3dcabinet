@@ -2,7 +2,8 @@ adafruit-blinka
 adafruit-blinka-displayio
 adafruit-circuitpython-display-text
 adafruit-circuitpython-dht
-adafruit-circuitpython-neopixel
 adafruit-circuitpython-rgb-display
+rpi_ws281x
 Pillow
 requests
+numpy

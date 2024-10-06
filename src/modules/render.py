@@ -1,14 +1,15 @@
 import adafruit_rgb_display.rgb as rgb
-from PIL import Image
+from modules.display import CacheImage
 
 class RenderedComponent: 
     rendered = False
 
     def __init__(self, background = None, backgroundColor = None, x = 0, y = 0, w = 240, h = 320):
         if background != None:
-            self.backgroundImg = Image.open(background)
+            self.backgroundCacheImg = CacheImage(background)
         else:
-            self.backgroundImg = None
+            self.backgroundCacheImg = None
+        self.backgroundImg = None
         self.backgroundColor = backgroundColor
         self.x = x
         self.y = y
@@ -21,6 +22,9 @@ class RenderedComponent:
                 disp.fill_rectangle(0,0,240,320, rgb.color565(self.backgroundColor))
             if self.backgroundImg != None:
                 disp.image(self.backgroundImg, None, self.x, self.y)
+            if self.backgroundCacheImg != None:
+                disp.drawImage(self.x, self.y, self.backgroundCacheImg)
+
             self.rendered = True
             return True
 

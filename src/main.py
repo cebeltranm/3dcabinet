@@ -1,9 +1,8 @@
 import keyboard
 import time
 import threading
-import adafruit_rgb_display.ili9341 as ili9341
+from modules.display import CacheImage, Display
 import board
-import neopixel
 import RPi.GPIO as GPIO
 from constants import *
 from modules.screens import LoadingScreen, MainScreen, ColorPickerScreen
@@ -12,6 +11,7 @@ from modules.touch_listener import TouchListener
 from modules.render import RenderedComponent
 from modules.bus_events import BusEvents, BusEventLlistener
 from modules.network import NetworkInfo
+from modules.ledstrip import LedStrip
 import time
 
 class Main(BusEventLlistener):
@@ -21,43 +21,41 @@ class Main(BusEventLlistener):
     screens = {}
 
     spi = board.SPI()
-    disp = ili9341.ILI9341(spi, rotation=DISPLAY_ROTATION, cs=DISPLAY_CS_PIN, dc=DISPLAY_DC_PIN, rst=DISPLAY_RESET_PIN)
+    disp = Display(spi)
 
     def __init__(self):
         self.selected_screen = LoadingScreen()
         threading.Thread(target=self._render_thread).start()
         self.selected_screen.step = 1
         self.network_info = NetworkInfo()
-        self.pixels1 = neopixel.NeoPixel(LEDS1_PIN, LEDS1_SIZE, pixel_order=neopixel.GRB, brightness=0)
-        time.sleep(0.5)
-        self.pixels2 = neopixel.NeoPixel(LEDS2_PIN, LEDS2_SIZE, pixel_order=neopixel.GRB, brightness=0)
-        time.sleep(0.5)
+        self.strip = LedStrip()
+        time.sleep(0.1)
         self.selected_screen.step = 2
         self.sensor1 = DHT22(SENSOR1_CS)
         self.sensor2 = DHT22(SENSOR2_CS)
         self.pwmsensor = PWMSensor(PWM_PIN, TACH_SENSOR)
-        time.sleep(0.5)
+        time.sleep(0.1)
 
         self.selected_screen.step = 3
         bus_events = BusEvents()
         bus_events.set_listener(self)
-        time.sleep(0.5)
+        time.sleep(0.1)
         self.selected_screen.step = 4
-        self.screens['main'] = MainScreen(self.pixels1, self.pixels2, self.pwmsensor)
-        time.sleep(0.5)
+        self.screens['main'] = MainScreen(self.strip, self.pwmsensor)
+        time.sleep(0.1)
         self.selected_screen.step = 5
         threading.Thread(target=self._sensors_thread).start()
-        time.sleep(0.5)
+        time.sleep(0.1)
         self.selected_screen.step = 6
         self.screens['color_picker'] = ColorPickerScreen()
-        time.sleep(0.5)
+        time.sleep(0.1)
         self.selected_screen.step = 9
         self.touchListener = TouchListener(self.spi, self._touch_event)
         threading.Thread(target=self._touch_thread).start()
-        time.sleep(0.5)
+        time.sleep(0.1)
         self.selected_screen.step = 10
         self.select_screen('main')
-        # threading.Thread(target=self._network_thread).start()        
+        threading.Thread(target=self._network_thread).start()        
 
     def select_screen(self, screen, section = None):
         self.screens[screen].clear_state()

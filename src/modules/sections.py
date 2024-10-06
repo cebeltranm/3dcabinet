@@ -5,6 +5,7 @@ from modules.bus_events import BusEvents
 from modules.store import Store
 from modules.network import NetworkInfo
 from constants import COLOR_BACKGROUND, COLOR_TEXT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER, DISPLAY_HEIGHT, DISPLAY_WIDTH
+from modules.display import CacheImage
 
 class Section (RenderedComponent, TouchEvent):
     def __init__(self, x, y , w, h):
@@ -61,7 +62,7 @@ class LevelSection(Section):
             self._level = 1
         if level > len(self.images):
             self._level = len(self.images)
-        self.backgroundImg = self.images[self._level - 1]
+        self.backgroundCacheImg = self.images[self._level - 1]
         self.rendered = False
         self.on_level_changed(self._level)
     
@@ -90,7 +91,7 @@ class LightSection(LevelSection):
     
     def __init__(self, x, y, pixels, id):
         if LightSection.light_images == None:
-            LightSection.light_images = [Image.open(f"resources/light{i}.jpg") for i in range(1, 6)]
+            LightSection.light_images = [CacheImage(f"resources/light{i}.pkl") for i in range(1, 6)]
         super().__init__( x, y, LightSection.light_images)
 
         self.pixels = pixels
@@ -106,7 +107,7 @@ class LightSection(LevelSection):
 
     def on_level_changed(self, level):
         if self.pixels:
-            self.pixels.brightness = 0 if level <=1 else (level - 1) / (len(LightSection.light_images) - 1)
+            self.pixels.setBrightness( 0 if level <=1 else 255 * (level - 1) / (len(LightSection.light_images) - 1) )
         store = Store()
         store.set_value(f"${self._id}_level", level)
     
@@ -120,7 +121,7 @@ class FanSection(LevelSection):
 
     def __init__(self, x, y, pwm_sensor):
         if FanSection.fan_images == None:
-            FanSection.fan_images = [Image.open(f"resources/fan{i}.jpg") for i in range(1, 5)]
+            FanSection.fan_images = [CacheImage(f"resources/fan{i}.pkl") for i in range(1, 5)]
         super().__init__( x, y, FanSection.fan_images)
         self.pwm_sensor = pwm_sensor
         store = Store()
@@ -204,17 +205,17 @@ class WifiSection(Section):
     
     def __init__(self, x, y):
         if self.images == None:
-            self.images = [Image.open(f"resources/wifi{i}.jpg") for i in range(1, 3)]
+            self.images = [CacheImage(f"resources/wifi{i}.pkl") for i in range(1, 3)]
         super().__init__(x, y, self.images[0].width, self.images[0].height)
-        self.backgroundImg = self.images[0]
+        self.backgroundCacheImg = self.images[0]
         self.network_info = NetworkInfo()
 
     def render(self, disp):
         if self.IP == None and self.network_info.private_ip != None:
-            self.backgroundImg = self.images[1]
+            self.backgroundCacheImg = self.images[1]
             self.rendered = False
         if self.IP != None and self.network_info.private_ip == None:
-            self.backgroundImg = self.images[0]
+            self.backgroundCacheImg = self.images[0]
             self.rendered = False
         self.IP = self.network_info.private_ip
         super().render(disp)

@@ -17,16 +17,17 @@ SENSOR2_CS = board.D16
 
 TOUCH_CS = digitalio.DigitalInOut(board.CE1)
 TOUCH_EVENT = board.D26
+# D12
+LED_PIN = 12
+LED_SEC1_SIZE = 20
+LED_SEC2_SIZE = 15
+LED_FILL_TIME = 1000 # ms
 
-LEDS1_PIN = board.D12
-LEDS1_SIZE = 81
-
-LEDS2_PIN = board.D18
-LEDS2_SIZE = 20
+# LEDS_2_PIN = board.D12
+# LEDS_2_SIZE = 80
 
 TACH_SENSOR = 17
 PWM_PIN = 13
-
 
 # Colors
 COLOR_BACKGROUND = (18, 18, 18)

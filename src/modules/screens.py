@@ -65,22 +65,22 @@ class LoadingScreen(Screen):
 
 
 class MainScreen(Screen):
-    def __init__(self, pixels1, pixels2, pwm_sensor):
+    def __init__(self, strip, pwm_sensor):
         self.section1 = {
             'temperature': NumberSection( 161, 79, 53, 44, FONT_SIZE_MEDIUM, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
             'humidity': NumberSection( 14, 47, 95, 74, FONT_SIZE_BIG, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
-            'light': LightSection(181, 4, pixels1, 'sec1'),
+            'light': LightSection(181, 4, strip.getSection(0), 'sec1'),
         }
         self.section2 = {
             'temperature': NumberSection( 161, 214, 53, 44, FONT_SIZE_MEDIUM, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
             'humidity': NumberSection( 14, 178, 95, 74, FONT_SIZE_BIG, COLOR_TEXT, COLOR_BACKGROUND, ALIGN_RIGHT),
-            'light': LightSection(181, 136, pixels2, 'sec2'),
+            'light': LightSection(181, 136, strip.getSection(1), 'sec2'),
         }
         self.pwm = NumberSection(128, 55, 48, 12, FONT_SIZE_SMALL, COLOR_ACCENT, COLOR_BACKGROUND, ALIGN_CENTER)
         self.pwm_section = FanSection(127, 4, pwm_sensor)
         self.wifi = WifiSection(190, 270);
 
-        super().__init__('resources/main.jpg', None, [
+        super().__init__('resources/main.pkl', None, [
             self.section1["temperature"],
             self.section1["humidity"],
             self.section1["light"],
@@ -129,7 +129,7 @@ class ColorPickerScreen(Screen):
         self.color_picker = ColorPickerSection(0, 0, 240, 280)
         closeButton = ButtonSection( None, 79, 280, 68, 40, self.close_screen )
 
-        super().__init__("resources/color_picker.jpg", COLOR_BACKGROUND, [
+        super().__init__("resources/color_picker.pkl", COLOR_BACKGROUND, [
             self.color_picker,
             closeButton
         ])

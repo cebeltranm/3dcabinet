@@ -1,62 +1,34 @@
-import RPi.GPIO as GPIO
-import time
+from PIL import Image
+import pickle
+from modules.display import CacheImage, Display
+
+import board
 
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(13, GPIO.OUT)
+# img = Image.open("resources/color_picker.jpg")
+# imwidth, imheight = img.size
+# pixels = bytearray(imwidth * imheight * 2)
+# for i in range(imwidth):
+#     for j in range(imheight):
+#         pix = rgb.color565(img.getpixel((i, j)))
+#         pixels[2 * (j * imwidth + i)] = pix >> 8
+#         pixels[2 * (j * imwidth + i) + 1] = pix & 0xFF
 
-# # Setup PWM process
-pwm = GPIO.PWM(13, 25000)  # Set frequency to 25 kHz
-pwm.start(100)  # Start PWM with 50% duty cycle
-time.sleep(1)
-pwm.ChangeDutyCycle(100)
-time.sleep(100)
+# data = {
+#     "width": imwidth,
+#     "height": imheight,
+#     "pixels": pixels
+# }
 
-# try:
-#     while True:
-#         # You can vary the duty cycle here to control the fan speed
-#         for dc in range(0, 101, 5):
-#             time.sleep(10)
-#             print(dc)
-#             pwm.ChangeDutyCycle(dc)
-# except KeyboardInterrupt:
-#     pass
+# with open("data.pkl", "wb") as file:
+#     pickle.dump(data, file)
+
+spi = board.SPI()
+disp = Display(spi)
+
+# disp.fill_rectangle(0,0,240,320, rgb.color565((18, 18, 18)))
 
 
-
-# import RPi.GPIO as GPIO
-# import time
-
-# Setup GPIO
-# GPIO.setmode(GPIO.BCM)
-# tach_pin = 4  # Change as per your connection
-# GPIO.setup(tach_pin, GPIO.IN)
-
-# # Initialize variables
-# rpm_count = 0
-# last_time = time.time()
-
-# # Callback function on rising edge
-# def rpm_callback(channel):
-#     global rpm_count
-#     rpm_count += 1
-
-# # Add event detect on rising edge
-# GPIO.add_event_detect(tach_pin, GPIO.RISING, callback=rpm_callback)
-
-try:
-    while False:
-        for dc in range(0, 101, 5):
-            print(dc)
-            pwm.ChangeDutyCycle(dc)
-            time.sleep(1)
-        # current_time = time.time()
-        # delta = current_time - last_time
-        # last_time = current_time
-        # rpm = (rpm_count / delta) * 60 / 2  # Dividing by 2 because there are two pulses per revolution (usually)
-        # print(f"RPM: {rpm}")
-        # rpm_count = 0
-except KeyboardInterrupt:
-    pwm.stop()
-    GPIO.cleanup()
-
+# Images.process_images()
+img = CacheImage("resources/main.pkl")
+disp.drawImage(0,0,img)
